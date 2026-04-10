@@ -246,18 +246,23 @@ describe('async/await simulation with generators', () => {
 
                 const n: number = yield Promise.resolve(Promise.resolve(500))
 
-                return Promise.resolve(n + (yield Promise.resolve(100)))
+                const res: Response = yield fetch('https://www.google.com')
+                const html = yield res.text()
+
+                return [
+                    yield Promise.resolve(n + (yield Promise.resolve(100))),
+                    html,
+                ]
             })
 
             const start = Date.now()
             const promise = f()
-            const res = await promise
+            const [num, html] = await promise
             const end = Date.now()
 
             expect(end - start).toBeGreaterThanOrEqual(1000)
-            expect(res).toBe(600)
-
-            promise.then((res) => expect(res).toBe(600))
+            expect(num).toBe(600)
+            expect(html.length).toBeGreaterThan(100)
         })
     })
 })
